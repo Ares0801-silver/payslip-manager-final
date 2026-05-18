@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaySlip — Mon espace</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">💼 PaySlip <span>Manager</span></div>
+    <nav>
+      <a href="#" class="active" onclick="showSection('fiches')">📄 Mes fiches de paie</a>
+      <a href="#" onclick="showSection('historique')">📋 Historique</a>
+      <a href="#" onclick="showSection('profil')">👤 Mon profil</a>
+    </nav>
+    <div class="logout"><a onclick="logout()">🚪 Déconnexion</a></div>
+  </aside>
+
+  <main class="main">
+
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="burger" onclick="toggleSidebar()">☰</button>
+        <strong id="page-title">Mes fiches de paie</strong>
+      </div>
+      <div class="user-info">
+        <div class="avatar" id="avatar">—</div>
+        <div>
+          <div style="font-weight:700;font-size:14px" id="user-name">—</div>
+          <div style="font-size:12px;color:#8FA3B1" id="user-poste">Employé</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FICHES -->
+    <section id="s-fiches">
+      <div class="page-header">
+        <h1>Mes bulletins de paie</h1>
+        <p>Consultez et téléchargez vos fiches</p>
+      </div>
+
+      <div id="resume-card" style="display:none;margin-bottom:24px;">
+        <div class="card" style="border-left:4px solid #00A8E8;">
+          <div class="card-title">⭐ Dernière fiche reçue</div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap;">
+            <div><div style="font-size:26px;font-weight:800;color:#0F1F3D" id="r-net">—</div><div style="font-size:12px;color:#8FA3B1">Net à payer</div></div>
+            <div><div style="font-size:20px;font-weight:700;color:#8FA3B1" id="r-brut">—</div><div style="font-size:12px;color:#8FA3B1">Brut</div></div>
+            <div><div style="font-size:20px;font-weight:700;color:#EF4444" id="r-cot">—</div><div style="font-size:12px;color:#8FA3B1">Cotisations</div></div>
+            <div><div style="font-size:20px;font-weight:700;color:#10B981" id="r-prime">—</div><div style="font-size:12px;color:#8FA3B1">Prime</div></div>
+            <div><div style="font-size:20px;font-weight:700;color:#0F1F3D" id="r-mois">—</div><div style="font-size:12px;color:#8FA3B1">Période</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mois</th><th>Net</th><th>Brut</th><th>Prime</th><th>Statut</th><th>PDF</th></tr></thead>
+            <tbody id="tbody-fiches"><tr><td colspan="6" style="text-align:center;color:#8FA3B1">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORIQUE -->
+    <section id="s-historique" style="display:none">
+      <div class="page-header"><h1>Historique de réception</h1><p>Toutes vos fiches reçues</p></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mois</th><th>Date de réception</th><th>Statut</th></tr></thead>
+            <tbody id="tbody-historique"><tr><td colspan="3" style="text-align:center;color:#8FA3B1">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFIL -->
+    <section id="s-profil" style="display:none">
+      <div class="page-header"><h1>Mon profil</h1></div>
+      <div class="card" style="max-width:480px;">
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;">
+          <div class="avatar" id="big-avatar" style="width:64px;height:64px;font-size:24px;">—</div>
+          <div>
+            <div style="font-size:20px;font-weight:800;color:#0F1F3D" id="p-nom">—</div>
+            <div style="color:#8FA3B1" id="p-poste">—</div>
+          </div>
+        </div>
+        <div class="form-group"><label>Email</label><input id="p-email" readonly style="background:#F0F4F8;color:#8FA3B1;cursor:not-allowed;"></div>
+        <div class="form-group"><label>Rôle</label><input value="Employé" readonly style="background:#F0F4F8;color:#8FA3B1;cursor:not-allowed;"></div>
+        <div style="font-size:12px;color:#8FA3B1;margin-top:8px;">🔒 Pour modifier vos informations, contactez votre employeur.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="/static/js/api.js"></script>
+<script>
+if (!getToken() || getUser().role !== "employe") window.location.href = "/";
+const user = getUser();
+document.getElementById("user-name").textContent = user.prenom + " " + user.nom;
+document.getElementById("avatar").textContent = initiales(user.nom, user.prenom);
+
+function showSection(name) {
+  ["fiches","historique","profil"].forEach(s => document.getElementById("s-"+s).style.display = "none");
+  document.getElementById("s-"+name).style.display = "block";
+  const titles = {fiches:"Mes fiches de paie", historique:"Historique", profil:"Mon profil"};
+  document.getElementById("page-title").textContent = titles[name];
+  if (name === "fiches")     loadFiches();
+  if (name === "historique") loadHistorique();
+  if (name === "profil")     loadProfil();
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+async function loadFiches() {
+  try {
+    const fiches = await apiFetch("/employe/fiches");
+    if (fiches.length > 0) {
+      const d = fiches[0];
+      document.getElementById("resume-card").style.display = "block";
+      document.getElementById("r-net").textContent   = mad(d.salaire_net);
+      document.getElementById("r-brut").textContent  = mad(d.salaire_brut);
+      document.getElementById("r-cot").textContent   = mad(d.cotisations);
+      document.getElementById("r-prime").textContent = mad(d.prime);
+      document.getElementById("r-mois").textContent  = d.mois;
+    }
+    const tb = document.getElementById("tbody-fiches");
+    tb.innerHTML = fiches.length ? fiches.map(f => `
+      <tr>
+        <td><strong>${f.mois}</strong></td>
+        <td style="color:#10B981;font-weight:700;">${mad(f.salaire_net)}</td>
+        <td>${mad(f.salaire_brut)}</td>
+        <td style="color:#10B981">${mad(f.prime)}</td>
+        <td><span class="badge ${f.envoye ? "badge-success":"badge-warning"}">${f.envoye ? "✅ Reçue":"⏳ En préparation"}</span></td>
+        <td>${f.has_pdf && f.envoye
+          ? `<button class="btn btn-outline btn-sm" onclick="telechargerPDF(${f.id},'employe')">📥 Télécharger</button>`
+          : `<span style="color:#8FA3B1;font-size:12px;">Non disponible</span>`
+        }</td>
+      </tr>`).join("") : `<tr><td colspan="6" style="text-align:center;color:#8FA3B1">Aucune fiche reçue</td></tr>`;
+  } catch(e) { toast(e.message,"error"); }
+}
+
+async function loadHistorique() {
+  const logs = await apiFetch("/employe/historique");
+  const tb = document.getElementById("tbody-historique");
+  tb.innerHTML = logs.length ? logs.map(l => `
+    <tr>
+      <td><strong>${l.mois}</strong></td>
+      <td>${l.date_envoi}</td>
+      <td><span class="badge ${l.statut==="success"?"badge-success":"badge-danger"}">${l.statut}</span></td>
+    </tr>`).join("") : `<tr><td colspan="3" style="text-align:center;color:#8FA3B1">Aucun envoi</td></tr>`;
+}
+
+async function loadProfil() {
+  const p = await apiFetch("/employe/profil");
+  document.getElementById("p-nom").textContent   = p.prenom + " " + p.nom;
+  document.getElementById("p-poste").textContent = p.poste || "—";
+  document.getElementById("p-email").value       = p.email;
+  document.getElementById("big-avatar").textContent = initiales(p.nom, p.prenom);
+}
+
+loadFiches();
+</script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaySlip — Tableau de bord Employeur</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">💼 PaySlip <span>Manager</span></div>
+    <nav>
+      <a href="#" class="active" onclick="showSection('dashboard')">📊 Tableau de bord</a>
+      <a href="#" onclick="showSection('employes')">👥 Employés</a>
+      <a href="#" onclick="showSection('fiches')">📄 Fiches de paie</a>
+      <a href="#" onclick="showSection('historique')">📋 Historique</a>
+    </nav>
+    <div class="logout"><a onclick="logout()">🚪 Déconnexion</a></div>
+  </aside>
+
+  <main class="main">
+
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="burger" onclick="toggleSidebar()">☰</button>
+        <strong id="page-title">Tableau de bord</strong>
+      </div>
+      <div class="user-info">
+        <div class="avatar" id="avatar">DG</div>
+        <div>
+          <div style="font-weight:700;font-size:14px" id="user-name">—</div>
+          <div style="font-size:12px;color:#8FA3B1">Employeur</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="s-dashboard">
+      <div class="page-header">
+        <h1>Vue d'ensemble</h1>
+        <p>Statistiques en temps réel</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="ico">👥</span><div class="val" id="st-employes">—</div><div class="lbl">Employés actifs</div></div>
+        <div class="stat-card"><span class="ico">📄</span><div class="val" id="st-fiches">—</div><div class="lbl">Fiches créées</div></div>
+        <div class="stat-card"><span class="ico">✅</span><div class="val" id="st-envoyees">—</div><div class="lbl">Fiches envoyées</div></div>
+        <div class="stat-card"><span class="ico">⏳</span><div class="val" id="st-attente">—</div><div class="lbl">En attente</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ Actions rapides</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="showSection('employes');openModalEmploye()">➕ Ajouter un employé</button>
+          <button class="btn btn-success" onclick="showSection('fiches');openModalFiche()">📄 Créer une fiche</button>
+          <button class="btn btn-outline" onclick="showSection('historique')">📋 Voir l'historique</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMPLOYÉS -->
+    <section id="s-employes" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+        <div><h1>Employés</h1><p>Gérer les membres de l'équipe</p></div>
+        <button class="btn btn-primary" onclick="openModalEmploye()">➕ Ajouter</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nom</th><th>Email</th><th>Poste</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="tbody-employes"><tr><td colspan="5" style="text-align:center;color:#8FA3B1">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHES -->
+    <section id="s-fiches" style="display:none">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+        <div><h1>Fiches de paie</h1><p>Créer et envoyer les bulletins</p></div>
+        <button class="btn btn-primary" onclick="openModalFiche()">➕ Nouvelle fiche</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Employé</th><th>Mois</th><th>Net</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="tbody-fiches"><tr><td colspan="5" style="text-align:center;color:#8FA3B1">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORIQUE -->
+    <section id="s-historique" style="display:none">
+      <div class="page-header"><h1>Historique des envois</h1><p>Journal complet</p></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Employé</th><th>Mois</th><th>Date d'envoi</th><th>Statut</th></tr></thead>
+            <tbody id="tbody-historique"><tr><td colspan="4" style="text-align:center;color:#8FA3B1">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal : Ajouter employé -->
+<div class="modal-bg" id="modal-employe">
+  <div class="modal">
+    <h2>➕ Ajouter un employé</h2>
+    <div class="form-group"><label>Prénom</label><input id="e-prenom" placeholder="Prénom"></div>
+    <div class="form-group"><label>Nom</label><input id="e-nom" placeholder="Nom"></div>
+    <div class="form-group"><label>Email</label><input id="e-email" type="email" placeholder="email@exemple.com"></div>
+    <div class="form-group"><label>Poste</label><input id="e-poste" placeholder="Ex: Développeur Backend"></div>
+    <div class="form-group"><label>Mot de passe</label><input id="e-pwd" type="password" placeholder="Mot de passe initial"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-employe')">Annuler</button>
+      <button class="btn btn-primary" onclick="ajouterEmploye()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Créer fiche -->
+<div class="modal-bg" id="modal-fiche">
+  <div class="modal">
+    <h2>📄 Nouvelle fiche de paie</h2>
+    <div class="form-group"><label>Employé</label><select id="f-employe"></select></div>
+    <div class="form-group"><label>Mois (AAAA-MM)</label><input id="f-mois" placeholder="Ex: 2026-05"></div>
+    <div class="form-group"><label>Salaire brut (MAD)</label><input id="f-brut" type="number" placeholder="5000"></div>
+    <div class="form-group"><label>Cotisations (MAD)</label><input id="f-cotisations" type="number" placeholder="700"></div>
+    <div class="form-group"><label>Prime (MAD, optionnel)</label><input id="f-prime" type="number" placeholder="0" value="0"></div>
+    <div style="background:#E8F4FD;padding:10px;border-radius:8px;font-size:13px;margin-bottom:16px;">
+      💡 Net = Brut + Prime − Cotisations
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-fiche')">Annuler</button>
+      <button class="btn btn-primary" onclick="creerFiche()">Créer & Générer PDF</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="/static/js/api.js"></script>
+<script>
+if (!getToken() || getUser().role !== "employeur") window.location.href = "/";
+const user = getUser();
+document.getElementById("user-name").textContent = user.prenom + " " + user.nom;
+document.getElementById("avatar").textContent = initiales(user.nom, user.prenom);
+
+// Navigation
+const sections = ["dashboard","employes","fiches","historique"];
+function showSection(name) {
+  sections.forEach(s => document.getElementById("s-"+s).style.display = "none");
+  document.getElementById("s-"+name).style.display = "block";
+  const titles = {dashboard:"Tableau de bord",employes:"Employés",fiches:"Fiches de paie",historique:"Historique"};
+  document.getElementById("page-title").textContent = titles[name];
+  if (name === "dashboard")  loadStats();
+  if (name === "employes")   loadEmployes();
+  if (name === "fiches")     loadFiches();
+  if (name === "historique") loadHistorique();
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+// Stats
+async function loadStats() {
+  try {
+    const s = await apiFetch("/employeur/stats");
+    document.getElementById("st-employes").textContent  = s.total_employes;
+    document.getElementById("st-fiches").textContent    = s.total_fiches;
+    document.getElementById("st-envoyees").textContent  = s.fiches_envoyees;
+    document.getElementById("st-attente").textContent   = s.fiches_en_attente;
+  } catch(e) { toast(e.message,"error"); }
+}
+
+// Employés
+let employes = [];
+async function loadEmployes() {
+  employes = await apiFetch("/employeur/employes");
+  const tb = document.getElementById("tbody-employes");
+  tb.innerHTML = employes.length ? employes.map(e => `
+    <tr>
+      <td><strong>${e.prenom} ${e.nom}</strong></td>
+      <td>${e.email}</td>
+      <td>${e.poste || "—"}</td>
+      <td><span class="badge ${e.actif ? "badge-success":"badge-danger"}">${e.actif ? "Actif":"Désactivé"}</span></td>
+      <td>${e.actif ? `<button class="btn btn-danger btn-sm" onclick="desactiverEmploye(${e.id})">Retirer</button>` : "—"}</td>
+    </tr>`).join("") : `<tr><td colspan="5" style="text-align:center;color:#8FA3B1">Aucun employé</td></tr>`;
+}
+
+async function ajouterEmploye() {
+  const prenom = document.getElementById("e-prenom").value.trim();
+  const nom    = document.getElementById("e-nom").value.trim();
+  const email  = document.getElementById("e-email").value.trim();
+  const poste  = document.getElementById("e-poste").value.trim();
+  const pwd    = document.getElementById("e-pwd").value;
+  if (!prenom||!nom||!email||!pwd) return toast("Remplissez tous les champs","error");
+  try {
+    await apiFetch("/employeur/employes", {method:"POST", body:JSON.stringify({prenom,nom,email,poste,password:pwd})});
+    closeModal("modal-employe");
+    toast("Employé ajouté ✅");
+    loadEmployes(); loadStats();
+  } catch(e) { toast(e.message,"error"); }
+}
+
+async function desactiverEmploye(id) {
+  if (!confirm("Désactiver cet employé ?")) return;
+  try {
+    await apiFetch(`/employeur/employes/${id}`, {method:"DELETE"});
+    toast("Employé désactivé");
+    loadEmployes(); loadStats();
+  } catch(e) { toast(e.message,"error"); }
+}
+
+// Fiches
+async function loadFiches() {
+  const fiches = await apiFetch("/employeur/fiches");
+  const tb = document.getElementById("tbody-fiches");
+  tb.innerHTML = fiches.length ? fiches.map(f => `
+    <tr>
+      <td><strong>${f.employe_nom}</strong></td>
+      <td>${f.mois}</td>
+      <td style="color:#10B981;font-weight:700;">${mad(f.salaire_net)}</td>
+      <td>
+        <span class="badge ${f.envoye ? "badge-success":"badge-warning"}">
+          ${f.envoye ? "✅ Envoyée" : "⏳ En attente"}
+        </span>
+        ${f.envoye_le ? `<br><small style="color:#8FA3B1">${f.envoye_le}</small>` : ""}
+      </td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${!f.envoye ? `<button class="btn btn-success btn-sm" onclick="envoyerFiche(${f.id})">📤 Envoyer</button>` : ""}
+        <button class="btn btn-outline btn-sm" onclick="telechargerPDF(${f.id},'employeur')">📥 PDF</button>
+      </td>
+    </tr>`).join("") : `<tr><td colspan="5" style="text-align:center;color:#8FA3B1">Aucune fiche</td></tr>`;
+}
+
+async function envoyerFiche(id) {
+  try {
+    const r = await apiFetch(`/employeur/fiches/${id}/envoyer`, {method:"POST"});
+    toast(r.message + " ✅");
+    loadFiches(); loadStats();
+  } catch(e) { toast(e.message,"error"); }
+}
+
+async function creerFiche() {
+  const employe_id   = parseInt(document.getElementById("f-employe").value);
+  const mois         = document.getElementById("f-mois").value.trim();
+  const salaire_brut = parseFloat(document.getElementById("f-brut").value);
+  const cotisations  = parseFloat(document.getElementById("f-cotisations").value);
+  const prime        = parseFloat(document.getElementById("f-prime").value||0);
+  if (!employe_id||!mois||!salaire_brut||!cotisations) return toast("Remplissez tous les champs","error");
+  try {
+    await apiFetch("/employeur/fiches", {method:"POST", body:JSON.stringify({employe_id,mois,salaire_brut,cotisations,prime})});
+    closeModal("modal-fiche");
+    toast("Fiche créée et PDF généré ✅");
+    loadFiches(); loadStats();
+  } catch(e) { toast(e.message,"error"); }
+}
+
+// Historique
+async function loadHistorique() {
+  const logs = await apiFetch("/employeur/historique");
+  const tb = document.getElementById("tbody-historique");
+  tb.innerHTML = logs.length ? logs.map(l => `
+    <tr>
+      <td><strong>${l.employe}</strong></td>
+      <td>${l.mois}</td>
+      <td>${l.date_envoi}</td>
+      <td><span class="badge ${l.statut==="success"?"badge-success":"badge-danger"}">${l.statut}</span></td>
+    </tr>`).join("") : `<tr><td colspan="4" style="text-align:center;color:#8FA3B1">Aucun envoi</td></tr>`;
+}
+
+// Modals
+function openModalEmploye() { document.getElementById("modal-employe").classList.add("open"); }
+async function openModalFiche() {
+  if (!employes.length) employes = await apiFetch("/employeur/employes");
+  const sel = document.getElementById("f-employe");
+  sel.innerHTML = employes.filter(e=>e.actif).map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join("");
+  document.getElementById("modal-fiche").classList.add("open");
+}
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+document.querySelectorAll(".modal-bg").forEach(bg => bg.addEventListener("click", e => {
+  if (e.target === bg) bg.classList.remove("open");
+}));
+
+loadStats();
+</script>
+</body>
+</html>

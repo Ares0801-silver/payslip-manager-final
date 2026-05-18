@@ -1,0 +1,8 @@
+.env
+payslip.db
+pdfs/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.zip

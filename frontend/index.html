@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaySlip Manager — Connexion</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="login-page">
+  <div class="login-card">
+    <div class="brand">
+      <h1>PaySlip <span>Manager</span></h1>
+      <p>Gestion automatisée des fiches de paie</p>
+    </div>
+
+    <div class="form-group">
+      <label>Adresse email</label>
+      <input type="email" id="email" placeholder="votre@email.com">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn btn-primary" onclick="login()">Se connecter</button>
+
+    <div style="text-align:center; margin-top:20px; font-size:13px; color:#8FA3B1;">
+      <strong>Comptes démo :</strong><br>
+      👔 Employeur : <code>employeur@demo.com</code> / <code>demo1234</code><br>
+      👤 Employé 1 : <code>kofi@demo.com</code> / <code>demo1234</code><br>
+      👤 Employé 2 : <code>amina@demo.com</code> / <code>demo1234</code>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="/static/js/api.js"></script>
+<script>
+  // Redirect si déjà connecté
+  if (getToken()) {
+    const role = getUser().role;
+    window.location.href = role === "employeur" ? "/dashboard-employeur" : "/dashboard-employe";
+  }
+
+  document.addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+
+  async function login() {
+    const email    = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    if (!email || !password) return toast("Remplissez tous les champs", "error");
+    try {
+      const data = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+      });
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data));
+      toast("Bienvenue " + data.prenom + " !");
+      setTimeout(() => {
+        window.location.href = data.role === "employeur" ? "/dashboard-employeur" : "/dashboard-employe";
+      }, 600);
+    } catch (e) {
+      toast(e.message, "error");
+    }
+  }
+</script>
+</body>
+</html>
